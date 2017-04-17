@@ -1,0 +1,18 @@
+{
+  "name": "emojiscrap",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node --harmony-async-await index.js"
+  },
+  "author": "nodegin",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.16.1",
+    "cheerio": "^0.22.0",
+    "fs-promise": "^2.0.2",
+    "glob": "^7.1.1",
+    "sharp": "^0.17.3"
+  }
+}
