@@ -1,5 +1,6 @@
 const axios = require('axios')
 const http = require('http')
+const https = require('https')
 const cheerio = require('cheerio')
 const fs = require('fs-promise')
 const glob = require('glob')
@@ -11,7 +12,7 @@ const resizeDir = 'emojis'
 function download(url, filename) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(filename)
-    const request = http.get(url, (response) => {
+    const request = https.get(url, (response) => {
       response.pipe(file)
       file.on('finish', () => {
         file.close(() => {
@@ -31,7 +32,7 @@ function download(url, filename) {
 
 async function main() {
   await fs.ensureDir(`./${saveDir}`)
-  const { data } = await axios('http://emojipedia.org/apple/ios-10.3/')
+  const { data } = await axios('http://emojipedia.org/apple/ios-11.1/')
   const $ = cheerio.load(data)
   const emojis = $('.emoji-grid > li').map((i, el) => {
     let image = $(el).children('a').children('img').attr('src')
@@ -39,7 +40,7 @@ async function main() {
       image = $(el).children('a').children('img').attr('data-src')
     }
     return {
-      link: $(el).children('a').attr('href').replace('/apple/ios-10.3/', 'http://emojipedia.org/'),
+      link: $(el).children('a').attr('href').replace('/apple/ios-11.1/', 'http://emojipedia.org/'),
       image,
     }
   }).get()
