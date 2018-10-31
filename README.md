@@ -9,6 +9,6 @@ Refer `index.js`
 
 ## Compression
 
-```
-rm -rf ./out && mkdir -p ./out; for i in *.png; do u=`curl --user api:KEY_HERE --data-binary @$i -s https://api.tinify.com/shrink | python -c "import sys, json; print json.load(sys.stdin)['output']['url']; sys.exit(0)"` | curl -o "out/$i" $u && rm $i; done
+```sh
+./compress.sh KEY_HERE
 ```
