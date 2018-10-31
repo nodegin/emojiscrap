@@ -2,10 +2,10 @@
 
 Refer `index.js`
 
-## Notes after scraping
+## Notes after scraping for twemoji
 
-1. 0 - 9 number emojis, (2a-fe0f-20e3), (23-fe0f-20e3) have to remove "fe0f"
-2. (1f441-fe0f-200d-1f5e8-fe0f) have to remove all "fe0f"
+1. 0 - 9 number emojis ([30-39]-fe0f-20e3), 2a-fe0f-20e3, 23-fe0f-20e3: remove all "fe0f"
+2. <del>1f441-fe0f-200d-1f5e8-fe0f: remove all "fe0f"</del> (seems fixed in ios 12.1)
 
 ## Compression
 

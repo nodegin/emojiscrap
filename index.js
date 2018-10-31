@@ -2,12 +2,14 @@ const axios = require('axios')
 const http = require('http')
 const https = require('https')
 const cheerio = require('cheerio')
-const fs = require('fs-promise')
+const fs = require('fs-extra')
 const glob = require('glob')
 const sharp = require('sharp')
+const twemoji = require('twemoji')
 
 const saveDir = 'emojis'
 const resizeDir = 'emojis'
+const validateDir = 'output'
 
 function download(url, filename) {
   return new Promise((resolve, reject) => {
@@ -19,11 +21,10 @@ function download(url, filename) {
           resolve(true)
         })
       })
-    }).on('error', (err) => {
-      fs.unlink(filename, () => {
-        console.log('Cannot download ' + url + ' as ' + filename)
-        resolve(false)
-      })
+    }).on('error', async (err) => {
+      await fs.remove(filename)
+      console.log('Cannot download ' + url + ' as ' + filename)
+      resolve(false)
     })
   })
   const file = fs.createWriteStream(filename)
@@ -32,7 +33,7 @@ function download(url, filename) {
 
 async function main() {
   await fs.ensureDir(`./${saveDir}`)
-  const { data } = await axios('http://emojipedia.org/apple/ios-11.1/')
+  const { data } = await axios('http://emojipedia.org/apple/ios-12.1/')
   const $ = cheerio.load(data)
   const emojis = $('.emoji-grid > li').map((i, el) => {
     let image = $(el).children('a').children('img').attr('src')
@@ -40,10 +41,11 @@ async function main() {
       image = $(el).children('a').children('img').attr('data-src')
     }
     return {
-      link: $(el).children('a').attr('href').replace('/apple/ios-11.1/', 'http://emojipedia.org/'),
+      link: $(el).children('a').attr('href').replace('/apple/ios-12.1/', 'http://emojipedia.org/'),
       image,
     }
   }).get()
+
   let i = 1
   let promise = Promise.resolve()
   emojis.forEach(({ link, image }) => {
@@ -89,8 +91,44 @@ async function resize() {
   })
 }
 
+async function validate() {
+  glob(`./${validateDir}/*.png`, async (err, files) => {
+    if (err) {
+      return console.log(err)
+    }
+    await fs.remove('./validated')
+    await fs.ensureDir('./validated')
+    const codePoints = files
+      .map((x) => x.match(/\/([0-9a-f-]{2,})\.png/)[1])
+      .map((x) => 
+        x.split('-')
+        .map((hex) => parseInt(hex, 16))
+        .map((x) => String.fromCodePoint(x))
+        .join('')
+      )
+    for (let i = 0; i < codePoints.length; i++) {
+      const file = files[i]
+      const emoji = codePoints[i]
+      const parsed = twemoji.parse(emoji)
+      if (!parsed.startsWith('<img')) {
+        // icon missing
+        // do nothing
+      } else {
+        // final validated
+        const renameTo = `./validated/${parsed.match(/\/([0-9a-f-]{2,})\.png/)[1]}.png`
+        await fs.copy(file, renameTo)
+        console.log(`[${emoji}]: ${file} -> ${renameTo}`)
+      }
+    }
+    console.log('Validate completed')
+  })
+}
+
 // uncomment below to start scraping
 // main()
 
 // uncomment below to resize scrapped images
 // resize()
+
+// uncomment below to validate with twemoji
+// validate()
